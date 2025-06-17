@@ -27,6 +27,20 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <script>
+        window.registerOutsideClick = function (dotNetObjRef, elementId) {
+            function handler(e) {
+                const el = document.getElementById(elementId);
+                if (el && !el.contains(e.target)) {
+                    dotNetObjRef.invokeMethodAsync('ClearTagSuggestions');
+                }
+            }
+            document.addEventListener('click', handler);
+
+            return () => document.removeEventListener('click', handler);
+        };
+    </script>
 </body>
 
 </html>
