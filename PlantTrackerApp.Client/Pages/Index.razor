@@ -282,7 +282,7 @@ else
                     </td>
                     <td data-label="Actions">
                         <button @onclick="() => EditPlant(plant)">Edit</button>
-                        <button @onclick="() => DeletePlant(plant.Id)">Delete</button>
+                        <button @onclick="() => ConfirmDelete(plant)">Delete</button>
                     </td>
                 </tr>
             }
@@ -351,6 +351,15 @@ else
     </div>
 }
 
+@if (showConfirmDialog)
+{
+    <div style="background-color:#fffbe6; border:1px solid #ccc; padding:20px; margin-top:10px; border-radius:8px;">
+        <p>Are you sure you want to delete <strong>@plantToDelete?.Name</strong>?</p>
+        <button @onclick="PerformDelete">Confirm</button>
+        <button @onclick="() => showConfirmDialog = false">Cancel</button>
+    </div>
+}
+
 @code {
     private List<ValidatedPlant>? plants;
     private ValidatedPlant editPlant = new();
@@ -362,6 +371,8 @@ else
     private List<string> tagSuggestions = new();
     private DotNetObjectReference<Index>? _dotNetRef;
     private ElementReference tagInputContainer;
+    private ValidatedPlant? plantToDelete;
+    private bool showConfirmDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -416,10 +427,21 @@ else
         await LoadPlants();
     }
 
-    private async Task DeletePlant(int id)
+    private void ConfirmDelete(ValidatedPlant plant)
     {
-        await Http.DeleteAsync($"api/plants/{id}");
-        await LoadPlants();
+        plantToDelete = plant;
+        showConfirmDialog = true;
+    }
+
+    private async Task PerformDelete()
+    {
+        if (plantToDelete != null)
+        {
+            await Http.DeleteAsync($"api/plants/{plantToDelete.Id}");
+            await LoadPlants();
+        }
+        showConfirmDialog = false;
+        plantToDelete = null;
     }
 
     private void CancelEdit()
