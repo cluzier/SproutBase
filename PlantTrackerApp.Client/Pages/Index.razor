@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations
+@using PlantTrackerApp.Server.Models
 @inject HttpClient Http
 @inject IJSRuntime JS
 
@@ -263,6 +264,13 @@ else
         </select>
     </div>
 
+    @if (!string.IsNullOrWhiteSpace(wateringAdvice))
+    {
+        <div style="background-color:#e0f7fa; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
+            <strong>@wateringAdvice</strong>
+        </div>
+    }
+
     <table class="table">
         <thead>
             <tr>
@@ -379,10 +387,12 @@ else
     private ElementReference tagInputContainer;
     private ValidatedPlant? plantToDelete;
     private bool showConfirmDialog = false;
+    private string? wateringAdvice;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPlants();
+        await LoadWeatherSuggestion();
     }
 
     private async Task LoadPlants()
@@ -549,5 +559,36 @@ else
             return "background-color:#fff9c4;"; // Yellow for today
 
         return "";
+    }
+
+    private async Task LoadWeatherSuggestion()
+    {
+        try
+        {
+            var coords = await JS.InvokeAsync<Dictionary<string, double>>("getLocation");
+            var lat = coords["latitude"];
+            var lon = coords["longitude"];
+
+            var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum&timezone=auto";
+            var weather = await Http.GetFromJsonAsync<WeatherResponse>(url);
+
+            if (weather?.daily?.precipitation_sum != null && weather.daily.precipitation_sum.Count > 0)
+            {
+                var todayRain = weather.daily.precipitation_sum[0];
+
+                if (todayRain < 1.0)
+                    wateringAdvice = "No rain today - remember to water your plants!";
+                else
+                    wateringAdvice = "It's raining - watering not needed today.";
+            }
+            else
+            {
+                wateringAdvice = "Weather data unavailable.";
+            }
+        }
+        catch
+        {
+            wateringAdvice = "Could not get location or weather data.";
+        }
     }
 }
