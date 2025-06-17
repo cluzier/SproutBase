@@ -30,9 +30,6 @@ wwwroot/dist/
 **/node_modules/
 **/wwwroot/lib/
 
-# EF Core Migrations Build Artifacts
-Migrations/
-
 # OS junk
 .DS_Store
 Thumbs.db
@@ -40,7 +37,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Local DBs (optional — you can commit seed dbs if needed)
+# Local DBs
 *.mdf
 *.ldf
 
