@@ -41,14 +41,17 @@ SproutBase is a responsive CRUD application built with Blazor, ASP.NET Core Web 
 3. **Apply migrations & create database**
 
     ```bash
-    dotnet ef database update
+    dotnet ef database update --project PlantTrackerApp.Server
+    ```
 
 4. **Run the app**
 
     ```bash
-    dotnet run --project Server
+    dotnet run --project PlantTrackerApp.Server
 
-Open your browser at https://localhost:7121 (or whichever port is listed).
+5. **Open your browser**
+
+    By default, the app runs at `http://localhost:5180` or `https://localhost:7121` (or whichever port is listed in your terminal). Open your browser at the appropriate URL to access SproutBase.
 
 ## Acknowledgements
 
