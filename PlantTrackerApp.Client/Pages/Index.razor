@@ -1,0 +1,382 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f0fff4;
+        color: #2f4f4f;
+        margin: 20px;
+    }
+
+    h3 {
+        color: #2e8b57;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .table th, .table td {
+        border: 1px solid #e0e0e0;
+        padding: 10px;
+    }
+
+    .table th {
+        background-color: #d0f0c0;
+    }
+
+    input[type="text"], input[type="date"] {
+        padding: 6px;
+        margin: 5px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    .tags span {
+        display: inline-block;
+        background-color: #b2fab4;
+        color: #2e7d32;
+        padding: 3px 8px;
+        margin: 2px;
+        border-radius: 12px;
+        font-size: 0.85em;
+    }
+
+    .form-container {
+        margin-top: 20px;
+        padding: 12px;
+        border: 1px solid #c8e6c9;
+        border-radius: 6px;
+        background-color: #e8f5e9;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    /* on medium screens, stack in two columns */
+    @@media (max-width: 768px) {
+        .form-group {
+            flex: 1 1 100%;
+        }
+
+        .form-row {
+            gap: 12px;
+        }
+    }
+
+    /* on small screens, stack in a single column with full width */
+    @@media (max-width: 480px) {
+        .form-group {
+            flex: 1 1 100%;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 10px;
+    }
+
+    button {
+        padding: 6px 12px;
+        background-color: #32cd32;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button[disabled] {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-top: 8px;
+    }
+
+    .validation-message {
+        color: red;
+        font-size: 0.85em;
+    }
+
+    .search-filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 16px 0;
+    }
+
+    .search-filter-row input[type="text"],
+    .search-filter-row select {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    @@media (max-width: 768px) {
+        .table {
+            /* display: block; */
+            /* overflow-x: auto; */
+            white-space: nowrap;
+            border-radius: 8px;
+        }
+    }
+
+    @@media (max-width: 645px) {
+        .table thead {
+            display: none;
+        }
+
+        .table, .table tbody, .table tr, .table td {
+            display: block;
+            width: 100%;
+        }
+
+        .table tr {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .table td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+        }
+
+        .table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 10px;
+            width: 45%;
+            padding-left: 15px;
+            font-weight: bold;
+            text-align: left;
+            color: #333;
+        }
+    }
+</style>
+
+<h3>🌿 Plant Tracker</h3>
+
+@if (plants == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="search-filter-row">
+        <button @onclick="ShowAddPlant">Add Plant</button>
+        <input placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" />
+        <select @bind="selectedTag">
+            <option value="">Filter by tag</option>
+            @foreach (var tag in AllTags)
+            {
+                <option value="@tag">@tag</option>
+            }
+        </select>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Species</th>
+                <th>Last Watered</th>
+                <th>Tags</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var plant in FilteredPlants)
+            {
+                <tr>
+                    <td data-label="Name">@plant.Name</td>
+                    <td data-label="Species">@plant.Species</td>
+                    <td data-label="Last Watered">@plant.LastWatered.ToShortDateString()</td>
+                    <td data-label="Tags" class="tags">
+                        @foreach (var tag in plant.TagList)
+                        {
+                            <span>@tag</span>
+                        }
+                    </td>
+                    <td data-label="Actions">
+                        <button @onclick="() => EditPlant(plant)">Edit</button>
+                        <button @onclick="() => DeletePlant(plant.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showForm)
+{
+    <div class="form-container">
+        <EditForm EditContext="editContext" OnValidSubmit="SavePlant">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <InputText @bind-Value="editPlant.Name" />
+                    <ValidationMessage For="@(() => editPlant.Name)" class="validation-message" />
+                </div>
+
+                <div class="form-group">
+                    <label>Species:</label>
+                    <InputText @bind-Value="editPlant.Species" />
+                    <ValidationMessage For="@(() => editPlant.Species)" class="validation-message" />
+                </div>
+
+                <div class="form-group">
+                    <label>Last Watered:</label>
+                    <InputDate @bind-Value="editPlant.LastWatered" />
+                    <ValidationMessage For="@(() => editPlant.LastWatered)" class="validation-message" />
+                </div>
+
+                <div class="form-group" style="flex: 1 1 100%;">
+                    <label>Tags (comma-separated):</label>
+                    <InputText @bind-Value="editPlant.Tags" />
+                </div>
+            </div>
+
+            <button type="submit" disabled="@(!formIsValid)">Save</button>
+            <button type="button" @onclick="CancelEdit">Cancel</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private List<ValidatedPlant>? plants;
+    private ValidatedPlant editPlant = new();
+    private EditContext? editContext;
+    private bool showForm = false;
+    private string searchTerm = "";
+    private string selectedTag = "";
+    private bool formIsValid = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlants();
+    }
+
+    private async Task LoadPlants()
+    {
+        plants = await Http.GetFromJsonAsync<List<ValidatedPlant>>("api/plants");
+    }
+
+    private void ShowAddPlant()
+    {
+        editPlant = new ValidatedPlant { LastWatered = DateTime.Today };
+        editContext = new EditContext(editPlant);
+        editContext.OnFieldChanged += (_, __) => formIsValid = editContext.Validate();
+        formIsValid = false;
+        showForm = true;
+    }
+
+    private void EditPlant(ValidatedPlant plant)
+    {
+        editPlant = new ValidatedPlant
+        {
+            Id = plant.Id,
+            Name = plant.Name,
+            Species = plant.Species,
+            LastWatered = plant.LastWatered,
+            Tags = plant.Tags
+        };
+        editContext = new EditContext(editPlant);
+        editContext.OnFieldChanged += (_, __) => formIsValid = editContext.Validate();
+        formIsValid = false;
+        showForm = true;
+    }
+
+    private async Task SavePlant()
+    {
+        if (editPlant.Id == 0)
+        {
+            await Http.PostAsJsonAsync("api/plants", editPlant);
+        }
+        else
+        {
+            await Http.PutAsJsonAsync($"api/plants/{editPlant.Id}", editPlant);
+        }
+        showForm = false;
+        await LoadPlants();
+    }
+
+    private async Task DeletePlant(int id)
+    {
+        await Http.DeleteAsync($"api/plants/{id}");
+        await LoadPlants();
+    }
+
+    private void CancelEdit()
+    {
+        showForm = false;
+    }
+
+    private IEnumerable<ValidatedPlant> FilteredPlants =>
+        (plants ?? Enumerable.Empty<ValidatedPlant>())
+            .Where(p =>
+                (string.IsNullOrWhiteSpace(searchTerm) || p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrWhiteSpace(selectedTag) || p.TagList.Contains(selectedTag))
+            );
+
+    private IEnumerable<string> AllTags =>
+        plants?
+            .SelectMany(p => p.TagList)
+            .Distinct()
+            .OrderBy(tag => tag)
+        ?? Enumerable.Empty<string>();
+
+    public class ValidatedPlant
+    {
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Species is required")]
+        public string? Species { get; set; }
+
+        [Required]
+        public DateTime LastWatered { get; set; }
+
+        public string Tags { get; set; } = string.Empty;
+
+        public IEnumerable<string> TagList =>
+            string.IsNullOrWhiteSpace(Tags)
+                ? Enumerable.Empty<string>()
+                : Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+}

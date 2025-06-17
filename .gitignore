@@ -1,0 +1,49 @@
+# Build outputs
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio and VS Code folders
+.vscode/
+.vs/
+
+# Dotnet tools
+*.dbmdl
+*.pdb
+
+# Build logs
+msbuild.log
+
+# ASP.NET Core specific
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Blazor WebAssembly
+wwwroot/dist/
+**/node_modules/
+**/wwwroot/lib/
+
+# EF Core Migrations Build Artifacts
+Migrations/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local DBs (optional — you can commit seed dbs if needed)
+*.mdf
+*.ldf
+
+# Rider/JetBrains
+.idea/
+*.sln.iml
