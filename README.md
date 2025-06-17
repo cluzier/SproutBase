@@ -28,33 +28,41 @@ SproutBase is a responsive CRUD application built with Blazor, ASP.NET Core Web 
 
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/cluzier/SproutBase.git
-   cd SproutBase
+    ```bash
+    git clone https://github.com/cluzier/SproutBase.git
+    cd SproutBase
+    ```
 
 2. **Restore and build**
 
     ```bash
     dotnet restore
     dotnet build
+    ```
 
-3. **Apply migrations & create database**
+3. **Add initial migration**
+
+    ```bash
+    dotnet ef migrations add InitialCreate --project PlantTrackerApp.Server
+    ```
+
+4. **Apply migrations & create database**
 
     ```bash
     dotnet ef database update --project PlantTrackerApp.Server
     ```
 
-4. **Run the app**
+5. **Run the app**
 
     ```bash
     dotnet run --project PlantTrackerApp.Server
+    ```
 
-5. **Open your browser**
+6. **Open your browser**
 
     By default, the app runs at `http://localhost:5180` or `https://localhost:7121` (or whichever port is listed in your terminal). Open your browser at the appropriate URL to access SproutBase.
 
 ## Acknowledgements
 
 This project was built as part of a technical evaluation. Thank you to [Frontpoint](https://www.frontpointsecurity.com/) for the opportunity to showcase my skills in such a fun and engaging way.
-
 
