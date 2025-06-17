@@ -7,6 +7,9 @@ SproutBase is a responsive CRUD application built with Blazor, ASP.NET Core Web 
 - Add, edit, and delete plants
 - Search and filter by name or tag
 - Responsive layout for all screen sizes
+- Autocomplete tag suggestions when typing
+- Confirmation dialog before deleting a plant
+- Highlight plants overdue for watering (red if >7 days, yellow if watered today)
 
 ## 🧱 Tech Stack
 
