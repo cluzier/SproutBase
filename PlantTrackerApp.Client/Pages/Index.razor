@@ -130,14 +130,14 @@
 
     .search-filter-row input[type="text"],
     .search-filter-row select {
-            flex: 1;
-            min-width: 200px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-            background-color: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        flex: 1;
+        min-width: 200px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: #ffffff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .tag-suggestions {
@@ -186,10 +186,10 @@
         cursor: pointer;
         font-size: 1em;
     }
-
-        .tag-close:hover {
-            color: #d32f2f;
-        }
+    
+    .tag-close:hover {
+        color: #d32f2f;
+    }
 
     @@media (max-width: 768px) {
         .table {
@@ -396,7 +396,7 @@ else
         editContext = new EditContext(editPlant);
         editContext.OnFieldChanged += (_, __) => formIsValid = editContext.Validate();
 
-        // 🔥 Trigger validation immediately for pre-filled fields
+        // Trigger validation immediately for pre-filled fields
         formIsValid = editContext.Validate();
 
         showForm = true;
@@ -507,7 +507,6 @@ else
 
     private void RemoveTag(string tagToRemove)
     {
-        Console.WriteLine($"RemoveTag called with: {tagToRemove}");
         var tags = editPlant.TagList.Where(tag => !string.Equals(tag, tagToRemove, StringComparison.OrdinalIgnoreCase)).ToList();
         editPlant.Tags = string.Join(", ", tags);
     }
