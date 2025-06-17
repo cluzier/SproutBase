@@ -126,6 +126,12 @@
         flex-wrap: wrap;
         gap: 12px;
         margin: 16px 0;
+        width: fit-content;
+
+        > input {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     }
 
     .search-filter-row input[type="text"],
@@ -270,7 +276,7 @@ else
         <tbody>
             @foreach (var plant in FilteredPlants)
             {
-                <tr>
+                <tr style="@GetWateringStyle(plant)">
                     <td data-label="Name">@plant.Name</td>
                     <td data-label="Species">@plant.Species</td>
                     <td data-label="Last Watered">@plant.LastWatered.ToShortDateString()</td>
@@ -509,5 +515,17 @@ else
     {
         var tags = editPlant.TagList.Where(tag => !string.Equals(tag, tagToRemove, StringComparison.OrdinalIgnoreCase)).ToList();
         editPlant.Tags = string.Join(", ", tags);
+    }
+
+    private string GetWateringStyle(ValidatedPlant plant)
+    {
+        var daysSince = (DateTime.Today - plant.LastWatered.Date).TotalDays;
+
+        if (daysSince > 7)
+            return "background-color:#ffebee; color:#b71c1c;"; // Red for overdue
+        if (daysSince == 0)
+            return "background-color:#fff9c4;"; // Yellow for today
+
+        return "";
     }
 }
