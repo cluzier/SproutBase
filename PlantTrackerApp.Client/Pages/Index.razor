@@ -36,7 +36,7 @@
         background-color: #d0f0c0;
     }
 
-    input[type="text"], input[type="date"] {
+    input {
         padding: 6px;
         margin: 5px 0;
         border: 1px solid #ccc;
@@ -63,9 +63,9 @@
     }
 
     .form-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: auto;
+        gap: 10px;
     }
 
     /* on medium screens, stack in two columns */
@@ -86,7 +86,7 @@
         }
 
         .form-row {
-            flex-direction: column;
+            grid-template-columns: 1fr;
             gap: 10px;
         }
     }
@@ -126,15 +126,26 @@
     }
 
     .search-filter-row {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: .5fr 1fr 1fr;
         gap: 12px;
         margin: 16px 0;
         width: fit-content;
 
+        button {
+            margin: 5px 0;
+        }
+
         > input {
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+
+        @@media (max-width: 645px) {
+            .search-folder-row div {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
         }
     }
 
@@ -143,6 +154,7 @@
         flex: 1;
         min-width: 200px;
         padding: 8px;
+        margin: 5px 0;
         border: 1px solid #ccc;
         border-radius: 4px;
         font-size: 1rem;
@@ -244,6 +256,10 @@
             text-align: left;
             color: #333;
         }
+
+        .search-filter-row {
+            grid-template-columns: auto;
+        }
     }
 </style>
 
@@ -257,14 +273,14 @@ else
 {
     <div class="search-filter-row">
         <button @onclick="ShowAddPlant">Add Plant</button>
-        <input placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" />
-        <select @bind="selectedTag">
-            <option value="">Filter by tag</option>
-            @foreach (var tag in AllTags)
-            {
-                <option value="@tag">@tag</option>
-            }
-        </select>
+            <input placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" />
+            <select @bind="selectedTag">
+                <option value="">Filter by tag</option>
+                @foreach (var tag in AllTags)
+                {
+                    <option value="@tag">@tag</option>
+                }
+            </select>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(wateringAdvice))
