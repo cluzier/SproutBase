@@ -273,14 +273,15 @@ else
 {
     <div class="search-filter-row">
         <button @onclick="ShowAddPlant">Add Plant</button>
-            <input placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" />
-            <select @bind="selectedTag">
-                <option value="">Filter by tag</option>
-                @foreach (var tag in AllTags)
-                {
-                    <option value="@tag">@tag</option>
-                }
-            </select>
+        <input placeholder="Search by name..." @bind="searchTerm" @bind:event="oninput" />
+        <select @bind="selectedTag">
+            <option value="">Filter by tag</option>
+            <option value="__none__">(No tags)</option>
+            @foreach (var tag in AllTags)
+            {
+                <option value="@tag">@tag</option>
+            }
+        </select>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(wateringAdvice))
@@ -502,11 +503,15 @@ else
     }
 
     private IEnumerable<ValidatedPlant> FilteredPlants =>
-        (plants ?? Enumerable.Empty<ValidatedPlant>())
-            .Where(p =>
-                (string.IsNullOrWhiteSpace(searchTerm) || p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
-                (string.IsNullOrWhiteSpace(selectedTag) || p.TagList.Contains(selectedTag))
-            );
+    (plants ?? Enumerable.Empty<ValidatedPlant>())
+        .Where(p =>
+            (string.IsNullOrWhiteSpace(searchTerm) || p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (
+                string.IsNullOrWhiteSpace(selectedTag) ||
+                (selectedTag == "__none__" && !p.TagList.Any()) ||
+                p.TagList.Contains(selectedTag)
+            )
+        );
 
     private IEnumerable<string> AllTags =>
         plants?
