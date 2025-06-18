@@ -1,8 +1,11 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations
+@using PlantTrackerApp.Client.Services
 @using PlantTrackerApp.Server.Models
+@using System.Linq.Expressions
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject AppInfoService AppInfoService
 
 <style>
     body {
@@ -244,7 +247,7 @@
     }
 </style>
 
-<h3>🌿 Plant Tracker</h3>
+<h3>🌿 Plant Tracker <span class="text-muted" style="font-size: 0.5em;">@($"v{version}")</span></h3>
 
 @if (plants == null)
 {
@@ -309,18 +312,25 @@ else
     <div class="form-container">
         <EditForm EditContext="editContext" OnValidSubmit="SavePlant">
             <DataAnnotationsValidator />
-            <ValidationSummary />
 
             <div class="form-row">
                 <div class="form-group">
                     <label>Name:</label>
-                    <InputText @bind-Value="editPlant.Name" />
+                    <InputText Value="@editPlant.Name"
+                               ValueChanged="@((string _) => {})"
+                               ValueExpression="@(() => editPlant.Name)"
+                               oninput="@((ChangeEventArgs e) => OnTextInputChanged(e, "Name"))"
+                               class="@GetInputCssClass(() => editPlant.Name)" />
                     <ValidationMessage For="@(() => editPlant.Name)" class="validation-message" />
                 </div>
 
                 <div class="form-group">
                     <label>Species:</label>
-                    <InputText @bind-Value="editPlant.Species" />
+                    <InputText Value="@editPlant.Species"
+                               ValueChanged="@((string _) => {})"
+                               ValueExpression="@(() => editPlant.Species)"
+                               oninput="@((ChangeEventArgs e) => OnTextInputChanged(e, "Species"))"
+                               class="@GetInputCssClass(() => editPlant.Species)" />
                     <ValidationMessage For="@(() => editPlant.Species)" class="validation-message" />
                 </div>
 
@@ -388,9 +398,11 @@ else
     private ValidatedPlant? plantToDelete;
     private bool showConfirmDialog = false;
     private string? wateringAdvice;
+    private string version = "";
 
     protected override async Task OnInitializedAsync()
     {
+        version = await AppInfoService.GetVersionAsync();
         await LoadPlants();
         await LoadWeatherSuggestion();
     }
@@ -498,6 +510,45 @@ else
             string.IsNullOrWhiteSpace(Tags)
                 ? Enumerable.Empty<string>()
                 : Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    private void OnTextInputChanged(ChangeEventArgs e, string propertyName)
+    {
+        if (e.Value is string input)
+        {
+            var filtered = new string(input.Where(c => !char.IsDigit(c)).ToArray());
+
+            if (editContext == null) return;
+
+            var fieldIdentifier = propertyName switch
+            {
+                "Name" => FieldIdentifier.Create(() => editPlant.Name),
+                "Species" => FieldIdentifier.Create(() => editPlant.Species),
+                _ => default
+            };
+
+            if (propertyName == "Name")
+            {
+                editPlant.Name = filtered;
+            }
+            else if (propertyName == "Species")
+            {
+                editPlant.Species = filtered;
+            }
+
+            editContext.NotifyFieldChanged(fieldIdentifier);
+            _ = editContext.Validate(); // revalidate form
+        }
+    }
+
+    private string GetInputCssClass(Expression<Func<object>> accessor)
+    {
+        if (editContext == null) return "";
+
+        var field = FieldIdentifier.Create(accessor);
+        var isInvalid = editContext.GetValidationMessages(field).Any();
+
+        return isInvalid ? "input-validation-error" : "";
     }
 
     private void OnTagsChanged(string input)
