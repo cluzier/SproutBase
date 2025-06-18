@@ -15,6 +15,7 @@ namespace PlantTrackerApp.Server.Controllers
             _config = config;
         }
 
+        // Returns the current application version.
         [HttpGet("version")]
         public IActionResult GetVersion()
         {

@@ -400,6 +400,8 @@ else
     private string? wateringAdvice;
     private string version = "";
 
+    /* Asynchronously initializes the component by retrieving the application version,
+    loading the list of plants, and fetching weather suggestions. */
     protected override async Task OnInitializedAsync()
     {
         version = await AppInfoService.GetVersionAsync();
@@ -412,6 +414,7 @@ else
         plants = await Http.GetFromJsonAsync<List<ValidatedPlant>>("api/plants");
     }
 
+    /// Prepares the form for adding a new plant and resets validation.
     private void ShowAddPlant()
     {
         editPlant = new ValidatedPlant { LastWatered = DateTime.Today };
@@ -421,6 +424,7 @@ else
         showForm = true;
     }
 
+    // Prepares the form for editing an existing plant.
     private void EditPlant(ValidatedPlant plant)
     {
         editPlant = new ValidatedPlant
@@ -491,6 +495,7 @@ else
             .OrderBy(tag => tag)
         ?? Enumerable.Empty<string>();
 
+    // Represents a plant with validation attributes for form input.
     public class ValidatedPlant
     {
         public int Id { get; set; }
@@ -512,6 +517,7 @@ else
                 : Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
+    // Handles text input changes for Name or Species, removes digits, updates the property, and revalidates the form.
     private void OnTextInputChanged(ChangeEventArgs e, string propertyName)
     {
         if (e.Value is string input)
@@ -551,6 +557,7 @@ else
         return isInvalid ? "input-validation-error" : "";
     }
 
+    // Updates tag suggestions based on the current tags input.
     private void OnTagsChanged(string input)
     {
         editPlant.Tags = input;
@@ -565,6 +572,7 @@ else
             .ToList();
     }
 
+    // Replace the last tag with the suggestion or add if empty, then clear suggestions.
     private void AddTagSuggestion(string suggestion)
     {
         var current = editPlant.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
@@ -585,6 +593,7 @@ else
         StateHasChanged();
     }
 
+    // Registers JS interop for outside click detection on first render.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -600,6 +609,7 @@ else
         editPlant.Tags = string.Join(", ", tags);
     }
 
+    // Returns a CSS style string based on how many days since the plant was last watered.
     private string GetWateringStyle(ValidatedPlant plant)
     {
         var daysSince = (DateTime.Today - plant.LastWatered.Date).TotalDays;
@@ -612,6 +622,11 @@ else
         return "";
     }
 
+    /* Asynchronously loads a weather-based watering suggestion for the user's location.
+    Attempts to retrieve the user's geographic coordinates via JavaScript interop,
+    fetches daily precipitation data from the Open-Meteo API, and sets a watering advice message
+    based on whether rain is expected today. Handles errors by setting an appropriate message
+    if location or weather data cannot be obtained. */
     private async Task LoadWeatherSuggestion()
     {
         try
